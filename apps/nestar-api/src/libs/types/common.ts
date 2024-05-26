@@ -6,6 +6,6 @@ export interface T {
 
 export interface StatisticModifier {
 	_id: ObjectId;
-	targetkey: string;
+	targetKey: string;
 	modifier: number;
 }

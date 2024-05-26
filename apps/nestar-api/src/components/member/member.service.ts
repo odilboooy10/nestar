@@ -155,12 +155,12 @@ export class MemberService {
 
 	public async memberStatsEditor(input: StatisticModifier): Promise<Member> {
 		console.log('executed');
-		const { _id, targetkey, modifier } = input;
+		const { _id, targetKey, modifier } = input;
 		return await this.memberModel
 			.findOneAndUpdate(
 				_id,
 				{
-					$inc: { [targetkey]: modifier },
+					$inc: { [targetKey]: modifier },
 				},
 				{ new: true },
 			)
