@@ -15,9 +15,10 @@ import { ViewGroup } from '../../libs/enums/view.enum';
 import { StatisticModifier, T } from '../../libs/types/common';
 import { BoardArticleUpdate } from '../../libs/dto/board-article/board-article.update';
 import { lookupMember, shapeIntoMongoObjectId } from '../../libs/config';
-// import { LikeInput } from '../../libs/dto/like/like.input';
-// import { LikeGroup } from '../../libs/enums/like.enum';
-// import { LikeService } from '../like/like.service';
+
+import { LikeInput } from '../../libs/dto/like/like.input';
+import { LikeGroup } from '../../libs/enums/like.enum';
+import { LikeService } from '../like/like.service';
 
 @Injectable()
 export class BoardArticleService {
@@ -25,7 +26,7 @@ export class BoardArticleService {
 		@InjectModel('BoardArticle') private readonly boardArticleModel: Model<BoardArticle>,
 		private readonly memberService: MemberService,
 		private readonly viewService: ViewService,
-		// private readonly likeService: LikeService,
+		private readonly likeService: LikeService,
 	) {}
 
 	public async createBoardArticle(memberId: ObjectId, input: BoardArticleInput): Promise<BoardArticle> {
@@ -65,8 +66,8 @@ export class BoardArticleService {
 			}
 
 			//me liked
-			//const likeInput = { memberId: memberId, likeRefId: articleId, likeGroup: LikeGroup.ARTICLE };
-			//targetBoardArticle.meLiked = await this.likeService.checkLikeExistence(likeInput);
+			const likeInput = { memberId: memberId, likeRefId: articleId, likeGroup: LikeGroup.ARTICLE };
+			targetBoardArticle.meLiked = await this.likeService.checkLikeExistence(likeInput);
 		}
 		// null -> memberni yozgan article ni koryabmiz holos. Shu sabab null ni qoydik. Malumot olish uchun ishlatyabmiz holos
 		targetBoardArticle.memberData = await this.memberService.getMember(null, targetBoardArticle.memberId);
@@ -134,7 +135,7 @@ export class BoardArticleService {
 		return result[0];
 	}
 
-	/* public async likeTargetBoardArticle(memberId: ObjectId, likeRefId: ObjectId): Promise<BoardArticle> {
+	public async likeTargetBoardArticle(memberId: ObjectId, likeRefId: ObjectId): Promise<BoardArticle> {
 		const target: BoardArticle = await this.boardArticleModel
 			.findOne({ _id: likeRefId, articleStatus: BoardArticleStatus.ACTIVE })
 			.exec();
@@ -155,10 +156,9 @@ export class BoardArticleService {
 			modifier: modifier,
 		});
 
-		if (!result) throw new InternalServerErrorException(Message.SOMETHING_WENT_WRONG);
+		if (!result) throw new InternalServerErrorException(Message.SOMETING_WENT_WRONG);
 		return result;
 	}
-	*/
 
 	public async getAllBoardArticlesByAdmin(input: AllBoardArticlesInquiry): Promise<BoardArticles> {
 		const { articleStatus, articleCategory } = input.search;

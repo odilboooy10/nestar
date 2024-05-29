@@ -69,7 +69,7 @@ export class BoardArticleResolver {
 
 	/**  LIKE  **/
 
-	/* @UseGuards(AuthGuard)
+	@UseGuards(AuthGuard)
 	@Mutation((returns) => BoardArticle)
 	public async likeTargetBoardArticle(
 		@Args('articleId') input: string,
@@ -81,7 +81,6 @@ export class BoardArticleResolver {
 
 		return await this.boardArticleService.likeTargetBoardArticle(memberId, likeRefId);
 	}
-    */
 
 	/**  ADMIN  **/
 
