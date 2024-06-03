@@ -4,6 +4,7 @@ import { Properties, Property } from '../../libs/dto/property/property';
 import {
 	AgentPropertiesInquiry,
 	AllProperitesInquiry,
+	OrdinaryInquiry,
 	PropertiesInquiry,
 	PropertyInput,
 } from '../../libs/dto/property/property.input';
@@ -16,6 +17,7 @@ import { ObjectId } from 'mongoose';
 import { WithoutGuard } from '../auth/guards/without.guard';
 import { shapeIntoMongoObjectId } from '../../libs/config';
 import { PropertyUpdate } from '../../libs/dto/property/property.update';
+import { AuthGuard } from '../auth/guards/auth.guard';
 
 @Resolver()
 export class PropertyResolver {
@@ -29,17 +31,21 @@ export class PropertyResolver {
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Property> {
 		console.log('Mutation: createProperty');
+
+		// aynan osha property qoshayotgan memberni ID sini va uni AuthMember decorator orqali olyabmiz
+		// kirib kelayotgan memberID siga Authentication jarayonidan olingan memberId ni yuklab olamiz. chunki bu frontend dan kelmaydi sababi property inputda biriktirmaganmz
 		input.memberId = memberId;
 		return await this.propertyService.createProperty(input);
 	}
 
 	@UseGuards(WithoutGuard)
-	@Query(() => Property)
+	@Query((returns) => Property)
 	public async getProperty(
 		@Args('propertyId') input: string,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Property> {
-		console.log('Query: this.getProperty');
+		console.log('Query: getProperty');
+
 		const propertyId = shapeIntoMongoObjectId(input);
 		return await this.propertyService.getProperty(memberId, propertyId);
 	}
@@ -47,23 +53,50 @@ export class PropertyResolver {
 	@Roles(MemberType.AGENT)
 	@UseGuards(RolesGuard)
 	@Mutation((returns) => Property)
+	// (Property)-> yangilangan property ni qaytaradi
 	public async updateProperty(
 		@Args('input') input: PropertyUpdate,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Property> {
 		console.log('Mutation: updateProperty');
+
+		// memberId => murojatchini id si
+
 		input._id = shapeIntoMongoObjectId(input._id);
 		return await this.propertyService.updateProperty(memberId, input);
 	}
 
 	@UseGuards(WithoutGuard)
-	@Query((returns) => Properties)
+	@Query(() => Properties)
 	public async getProperties(
 		@Args('input') input: PropertiesInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Properties> {
 		console.log('Query: getProperties');
+
 		return await this.propertyService.getProperties(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
+	@Query(() => Properties)
+	public async getFavorites(
+		@Args('input') input: OrdinaryInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Properties> {
+		console.log('Query: getFavorite');
+
+		return await this.propertyService.getFavorites(memberId, input);
+	}
+
+	@UseGuards(AuthGuard)
+	@Query(() => Properties)
+	public async getVisited(
+		@Args('input') input: OrdinaryInquiry,
+		@AuthMember('_id') memberId: ObjectId,
+	): Promise<Properties> {
+		console.log('Query: getVisited');
+
+		return await this.propertyService.getVisited(memberId, input);
 	}
 
 	@Roles(MemberType.AGENT)
@@ -73,7 +106,8 @@ export class PropertyResolver {
 		@Args('input') input: AgentPropertiesInquiry,
 		@AuthMember('_id') memberId: ObjectId,
 	): Promise<Properties> {
-		console.log('Query: getAgentProperties');
+		console.log('Query: getAgetnsProperties');
+
 		return await this.propertyService.getAgentProperties(memberId, input);
 	}
 
@@ -91,14 +125,15 @@ export class PropertyResolver {
 
 		return await this.propertyService.likeTargetProperty(memberId, likeRefId);
 	}
-	/** ADMIN **/
+
+	/**  ADMIN  **/
 
 	@Roles(MemberType.ADMIN)
 	@UseGuards(RolesGuard)
 	@Query((returns) => Properties) //-> Properties
 	public async getAllPropertiesByAdmin(
 		@Args('input') input: AllProperitesInquiry,
-		@AuthMember('_id') memberId: ObjectId,
+		// @AuthMember('_id') memberId: ObjectId,
 	): Promise<Properties> {
 		console.log('Query: getAllPropertiesByAdmin');
 
@@ -110,7 +145,9 @@ export class PropertyResolver {
 	@Mutation((returns) => Property)
 	public async updatePropertyByAdmin(@Args('input') input: PropertyUpdate): Promise<Property> {
 		console.log('Mutation: updatePropertyByAdmin');
+
 		input._id = shapeIntoMongoObjectId(input._id);
+
 		return await this.propertyService.updatePropertyByAdmin(input);
 	}
 
